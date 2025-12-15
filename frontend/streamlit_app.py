@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-BACKEND_URL = "http://localhost:8000"
+BACKEND_URL = "http://localhost:8001"
 
 st.set_page_config(page_title="Smart Task Planner", layout="wide")
 st.title("🧠 Smart Task Planner")
@@ -22,7 +22,8 @@ if st.button("Generate Plan"):
 
         refreshed = requests.get(f"{BACKEND_URL}/plan/all").json()
         st.session_state["plans"] = refreshed
-        st.session_state["current_plan"] = refreshed[-1] if len(refreshed) else None
+        st.session_state["current_plan"] = refreshed[-1] if len(
+            refreshed) else None
     else:
         st.error("Failed to generate plan")
 
@@ -35,7 +36,8 @@ if len(st.session_state["plans"]) > 0:
 
     if st.session_state["current_plan"]:
         current_name = f"Plan {st.session_state['current_plan']['plan_id']} — {st.session_state['current_plan']['goal']}"
-        default_index = plan_names.index(current_name) if current_name in plan_names else 0
+        default_index = plan_names.index(
+            current_name) if current_name in plan_names else 0
     else:
         default_index = 0
 
@@ -72,7 +74,8 @@ if len(st.session_state["plans"]) > 0:
                 status = st.selectbox(
                     "Status",
                     ["Not Started", "In Progress", "Completed"],
-                    index=["Not Started", "In Progress", "Completed"].index(task["status"]),
+                    index=["Not Started", "In Progress",
+                           "Completed"].index(task["status"]),
                     key=f"status-{task['task_db_id']}"
                 )
 
@@ -83,7 +86,8 @@ if len(st.session_state["plans"]) > 0:
                     )
                     if update.status_code == 200:
                         st.success("Updated!")
-                        refreshed = requests.get(f"{BACKEND_URL}/plan/all").json()
+                        refreshed = requests.get(
+                            f"{BACKEND_URL}/plan/all").json()
                         st.session_state["plans"] = refreshed
                     else:
                         st.error("Failed to update")
@@ -93,9 +97,11 @@ else:
 st.header("🗑 Delete Plan")
 
 if len(st.session_state["plans"]) > 0:
-    delete_options = [f"Plan {p['plan_id']} — {p['goal']}" for p in st.session_state["plans"]]
+    delete_options = [
+        f"Plan {p['plan_id']} — {p['goal']}" for p in st.session_state["plans"]]
 
-    delete_selected = st.selectbox("Select a plan to delete", delete_options, key="delete_dropdown")
+    delete_selected = st.selectbox(
+        "Select a plan to delete", delete_options, key="delete_dropdown")
 
     if st.button("Delete Selected Plan"):
         delete_id = int(delete_selected.split(" ")[1])
@@ -107,7 +113,8 @@ if len(st.session_state["plans"]) > 0:
 
             refreshed = requests.get(f"{BACKEND_URL}/plan/all").json()
             st.session_state["plans"] = refreshed
-            st.session_state["current_plan"] = refreshed[-1] if len(refreshed) else None
+            st.session_state["current_plan"] = refreshed[-1] if len(
+                refreshed) else None
         else:
             st.error("Failed to delete plan")
 else:

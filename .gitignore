@@ -1,6 +1,11 @@
+# Cache
 __pycache__/
+
+# Virtual Environment
 venv/
+
+# Secret Environment Variable (containing Groq API Key)
 .env
-plan_1.pdf
-plan_3.pdf
-plan_7.pdf
+
+# Pdfs
+*.pdf

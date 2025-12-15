@@ -7,8 +7,10 @@ from app.model import Plan, TaskModel
 from app.core.llm import generate_task_plan
 from app.core.scheduler import schedule_tasks
 from reportlab.pdfgen import canvas
+import os
 
 plan_router = APIRouter(prefix="/plan", tags=["Planning"])
+
 
 @plan_router.post("/")
 def create_plan(request: PlanRequest, session: Session = Depends(get_db)):
@@ -25,7 +27,8 @@ def create_plan(request: PlanRequest, session: Session = Depends(get_db)):
             task_code=f"T{idx}",
             name=t["name"],
             description=t["description"],
-            depends_on=",".join(t.get("depends_on", [])) if t.get("depends_on") else None,
+            depends_on=",".join(t.get("depends_on", [])) if t.get(
+                "depends_on") else None,
             estimated_days=t["estimated_days"],
             start_date=t["start_date"],
             end_date=t["end_date"],
@@ -44,7 +47,8 @@ def get_all(session: Session = Depends(get_db)):
     result = []
 
     for p in plans:
-        tasks = session.query(TaskModel).filter(TaskModel.plan_id == p.id).all()
+        tasks = session.query(TaskModel).filter(
+            TaskModel.plan_id == p.id).all()
         result.append({
             "plan_id": p.id,
             "goal": p.goal,
@@ -107,7 +111,8 @@ def export_pdf(plan_id: int, session: Session = Depends(get_db)):
         pdf.drawString(60, y, f"Description: {t.description}")
         y -= 15
 
-        pdf.drawString(60, y, f"Depends On: {t.depends_on if t.depends_on else 'None'}")
+        pdf.drawString(
+            60, y, f"Depends On: {t.depends_on if t.depends_on else 'None'}")
         y -= 15
 
         pdf.drawString(60, y, f"Estimated Days: {t.estimated_days}")
@@ -123,7 +128,15 @@ def export_pdf(plan_id: int, session: Session = Depends(get_db)):
 
     pdf.save()
 
-    return FileResponse(filename, media_type="application/pdf", filename=filename)
+    # Return file and schedule cleanup after response
+    return FileResponse(
+        filename,
+        media_type="application/pdf",
+        filename=filename,
+        background=lambda: os.remove(
+            filename) if os.path.exists(filename) else None
+    )
+
 
 @plan_router.delete("/{plan_id}")
 def delete_plan(plan_id: int, session: Session = Depends(get_db)):
